@@ -1,5 +1,6 @@
 package com.wenganse.android.photogallery;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -29,7 +30,7 @@ import java.util.zip.Inflater;
  * Created by Plus on 14.05.2017.
  */
 
-public class PhotoGalleryFragment extends Fragment {
+public class PhotoGalleryFragment extends VisibleFragment {
 
     public static final String TAG = "PhotoGalleryFragment";
 
@@ -124,8 +125,6 @@ public class PhotoGalleryFragment extends Fragment {
                 return true;
             }
 
-
-
             @Override
             //выполняется при каждом изменении текста в текстовом поле SearchView
             public boolean onQueryTextChange(String s) {
@@ -142,7 +141,14 @@ public class PhotoGalleryFragment extends Fragment {
                 String query = QueryPreferences.getStoredQuery( getActivity() );
                 searchView.setQuery( query, false );
             }
-        } );
+        });
+
+        MenuItem toggleItems = menu.findItem( R.id.menu_item_toggle_polling );
+        if (PollService.isServiceAlarm(getActivity())){
+            toggleItems.setTitle(R.string.stop_polling);
+        }else {
+            toggleItems.setTitle( R.string.start_polling );
+        }
     }
 
     @Override
@@ -154,7 +160,11 @@ public class PhotoGalleryFragment extends Fragment {
                 // соответствуют самому последнему поисковому запросу.
                 updateItem();
                 return true;
-
+            case R.id.menu_item_toggle_polling:
+                boolean shouldStartAlarm = !PollService.isServiceAlarm( getActivity() );
+                PollService.setServiceAlarm( getActivity(), shouldStartAlarm );
+                getActivity().invalidateOptionsMenu();
+                return true;
             default:
                 return super.onOptionsItemSelected( item );
         }
@@ -175,16 +185,30 @@ public class PhotoGalleryFragment extends Fragment {
     }
 
     //Реализация ViewHolder.
-    private class PhotoHolder extends RecyclerView.ViewHolder {
+    private class PhotoHolder extends RecyclerView.ViewHolder
+            implements View.OnClickListener{
         private ImageView mItemImageView;
+        private GalleryItem mGalleryItem;
 
         public PhotoHolder(View itemView) {
             super( itemView );
             mItemImageView = (ImageView)itemView.findViewById( R.id.fragment_photo_galley_image_view );
+            itemView.setOnClickListener( this );
         }
             //Метод назначающий объект Drawable виджиту ImageView.
         public void bindDrawable(Drawable drawable){
             mItemImageView.setImageDrawable( drawable );
+        }
+
+        public void bindGalleryItem(GalleryItem galleryItem){
+            mGalleryItem = galleryItem;
+        }
+
+        @Override
+        public void onClick(View v) {
+            //неявный интент для запуска страницы в браузере.
+            Intent i = PhotoPageActivity.newIntent( getActivity(), mGalleryItem.getPhotoPageUri() );
+            startActivity( i );
         }
     }
 
@@ -207,6 +231,7 @@ public class PhotoGalleryFragment extends Fragment {
         @Override
         public void onBindViewHolder(PhotoHolder photoHolder, int position) {
             GalleryItem galleryItem = mGalleryItems.get( position );
+            photoHolder.bindGalleryItem( galleryItem );
             //назначение временного изображения.
             Drawable placeholder = getResources().getDrawable( R.drawable.bill_up_close );
             photoHolder.bindDrawable( placeholder );

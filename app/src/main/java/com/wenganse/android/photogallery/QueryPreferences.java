@@ -13,7 +13,11 @@ public class QueryPreferences {
 
     //PREF_SEARCH_QUERY используется в качестве ключа для хранения запроса.
     // Этот ключ применяется во всех операциях чтения или записи запроса.
-    public static final String PREF_SEARCH_QUERY = "searchQuery";
+    private static final String PREF_SEARCH_QUERY = "searchQuery";
+    //константа для хранения идентификатора последней загруженной фотографии.
+    private static final String PREF_LAST_RESULT_ID = "lastResultId";
+    //коснтанта для хранения состояния сигнала
+    private static final String PREF_IS_ALARM_ON = "isAlarmOn";
 
     // возвращает значение запроса, хранящееся в общих настройках.
     public static String getStoredQuery(Context context){
@@ -31,6 +35,29 @@ public class QueryPreferences {
                 .putString( PREF_SEARCH_QUERY, query )
                 // Метод apply() вносит изменения в память немедленно,
                 // а непосредственная запись в файл осуществляется в фоновом потоке.
+                .apply();
+    }
+
+    public static String getLastResultId(Context context){
+        return PreferenceManager.getDefaultSharedPreferences( context ).getString(PREF_LAST_RESULT_ID, null );
+    }
+    public static void setLastResultId(Context context, String lastResultId){
+        PreferenceManager.getDefaultSharedPreferences( context )
+                .edit()
+                .putString( PREF_LAST_RESULT_ID, lastResultId )
+                .apply();
+
+    }
+    //Настройки для хранения сигнала.
+    public static boolean isAlarmOn(Context context){
+        return PreferenceManager.getDefaultSharedPreferences( context )
+                .getBoolean( PREF_IS_ALARM_ON, false );
+    }
+
+    public static void setAlarmOn(Context context, boolean isON){
+        PreferenceManager.getDefaultSharedPreferences( context )
+                .edit()
+                .putBoolean( PREF_IS_ALARM_ON, isON )
                 .apply();
     }
 }

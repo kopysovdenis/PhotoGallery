@@ -24,11 +24,12 @@ import java.util.List;
 public class FlickrFetchr {
 
     public static final String TAG ="FlickrFetchr";
+
     public static final String API_KEY="8304d59fb2c7ff6878f709f17ecf2121";
 
 
     //Добавление констант для строки поиска и частей URL-адреса.
-    private static final String FETCH_RECENTS_METHOD = "flickr.photo.getRecent";
+    private static final String FETCH_RECENTS_METHOD = "flickr.photos.getRecent";
     private static final String SEARCH_METHOD = "flickr.photos.search";
     private static final Uri ENDPOINT = Uri.
             // Uri.Builder — вспомогательный класс
@@ -111,9 +112,10 @@ public class FlickrFetchr {
     //Вспомогательный метод для построения URL по значениям метода и запроса.
     //Метод buildUrl(…) присоединяет необходимые параметры
     private String buildUrl(String method, String query){
-        Uri.Builder uriBuilder = ENDPOINT.buildUpon().appendQueryParameter( "method", method );
+        Uri.Builder uriBuilder = ENDPOINT.buildUpon()
+                .appendQueryParameter( "method", method );
         if (method.equals( SEARCH_METHOD )){
-            uriBuilder.appendQueryParameter("Text", query );
+            uriBuilder.appendQueryParameter("text", query );
         }
         return uriBuilder.build().toString();
     }
@@ -137,6 +139,7 @@ public class FlickrFetchr {
             }
 
             item.setUri( photoJsonObject.getString( "url_s" ) );
+            item.setOwner(photoJsonObject.getString( "owner" ));
             items.add( item );
         }
     }
